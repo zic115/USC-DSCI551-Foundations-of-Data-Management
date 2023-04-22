@@ -1,0 +1,24 @@
+a) select count(*) 
+   from churn
+   where gender = 'Male' and Churn = 'Yes';
+
+Script:
+churn.rdd.filter(lambda r: (r['gender'] == 'Male') & (r['Churn'] == 'Yes')).count()
+
+Output:
+930
+
+
+
+b) select gender, max(TotalCharges)
+   from churn
+   where Churn = 'Yes'
+   group by gender;
+
+Script:
+churn.rdd.filter(lambda r: r['Churn'] == 'Yes').map(lambda r: (r['gender'], r['TotalCharges'])).reduceByKey(max).collect()
+
+Output:
+[('Male', 8684.8), ('Female', 8127.6)]
+
+

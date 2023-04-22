@@ -1,0 +1,243 @@
+1) Find out how many films are rated ‘PG-13’ and last between 100 and 200 minutes.
+
+Query:
+SELECT count(*)
+FROM film
+WHERE rating = 'PG-13'
+AND length >= 100
+AND length <= 200;
+
+Result:
++----------+
+| count(*) |
++----------+
+|      151 |
++----------+
+1 row in set (0.00 sec)
+
+
+
+2) Find first and last names of actors whose 2nd to the last letter of last name is ‘i’.
+
+Query:
+SELECT first_name, last_name
+FROM actor
+WHERE last_name LIKE '%i_';
+
+Result:
++------------+-----------+
+| first_name | last_name |
++------------+-----------+
+| JENNIFER   | DAVIS     |
+| BURT       | DUKAKIS   |
+| FRANCES    | DAY-LEWIS |
+| GARY       | PHOENIX   |
+| DAN        | HARRIS    |
+| WOODY      | JOLIE     |
+| BEN        | WILLIS    |
+| GREG       | CHAPLIN   |
+| GENE       | WILLIS    |
+| SUSAN      | DAVIS     |
+| SUSAN      | DAVIS     |
+| CATE       | HARRIS    |
+| BEN        | HARRIS    |
+| HUMPHREY   | WILLIS    |
+| ROCK       | DUKAKIS   |
++------------+-----------+
+15 rows in set (0.00 sec)
+
+
+
+3) Find the title and length of the longest films.
+
+Query:
+SELECT title, length
+FROM film
+WHERE length = (SELECT MAX(length) FROM film);
+
+Result:
++--------------------+--------+
+| title              | length |
++--------------------+--------+
+| CHICAGO NORTH      |    185 |
+| CONTROL ANTHEM     |    185 |
+| DARN FORRESTER     |    185 |
+| GANGS PRIDE        |    185 |
+| HOME PITY          |    185 |
+| MUSCLE BRIGHT      |    185 |
+| POND SEATTLE       |    185 |
+| SOLDIERS EVOLUTION |    185 |
+| SWEET BROTHERHOOD  |    185 |
+| WORST BANGER       |    185 |
++--------------------+--------+
+10 rows in set (0.00 sec)
+
+
+
+4) Find out how many films there are in each category. Output category name and the number of films in the category.
+
+Query:
+SELECT c.name AS category_name, COUNT(film_id) AS number_of_films
+FROM category c
+LEFT OUTER JOIN film_category fc
+ON c.category_id = fc.category_id
+GROUP BY category_name;
+
+Result:
++---------------+-----------------+
+| category_name | number_of_films |
++---------------+-----------------+
+| Action        |              64 |
+| Animation     |              66 |
+| Children      |              60 |
+| Classics      |              57 |
+| Comedy        |              58 |
+| Documentary   |              68 |
+| Drama         |              62 |
+| Family        |              69 |
+| Foreign       |              73 |
+| Games         |              61 |
+| Horror        |              56 |
+| Music         |              51 |
+| New           |              63 |
+| Sci-Fi        |              61 |
+| Sports        |              74 |
+| Travel        |              57 |
++---------------+-----------------+
+16 rows in set (0.00 sec)
+
+
+
+5) Find ids of customers who have rented films at least 40 times. Return the same ids only once.
+
+Query:
+SELECT customer_id
+FROM rental
+GROUP BY customer_id
+HAVING COUNT(customer_id) >= 40;
+
+Result:
++-------------+
+| customer_id |
++-------------+
+|          75 |
+|         144 |
+|         148 |
+|         197 |
+|         236 |
+|         469 |
+|         526 |
++-------------+
+7 rows in set (0.00 sec)
+
+
+
+6) Find first and last names of customers whose total payment exceeds $200.
+
+Query:
+SELECT c.first_name, c.last_name
+FROM customer c
+LEFT OUTER JOIN payment p
+ON c.customer_id = p.customer_id
+GROUP BY c.customer_id
+HAVING SUM(amount) > 200;
+
+Result:
++------------+-----------+
+| first_name | last_name |
++------------+-----------+
+| ELEANOR    | HUNT      |
+| KARL       | SEAL      |
++------------+-----------+
+2 rows in set (0.02 sec)
+
+
+
+7) Find first and last names of actors who have never played in films rated R.
+
+Query:
+SELECT a.first_name, a.last_name
+FROM actor a
+LEFT OUTER JOIN
+(film_actor fa
+INNER JOIN film f
+ON fa.film_id = f.film_id
+AND f.rating = 'R')
+ON a.actor_id = fa.actor_id
+WHERE f.film_id IS NULL;
+
+Result:
++------------+-----------+
+| first_name | last_name |
++------------+-----------+
+| JANE       | JACKMAN   |
++------------+-----------+
+1 row in set (0.00 sec)
+
+
+
+8) Find out how many films are not available in the inventory.
+
+Query:
+SELECT COUNT(*)
+FROM film f
+LEFT OUTER JOIN inventory i
+ON f.film_id = i.film_id
+WHERE i.inventory_id IS NULL;
+
+Result:
++----------+
+| COUNT(*) |
++----------+
+|       42 |
++----------+
+1 row in set (0.00 sec)
+
+
+
+9) Find out how many actors who have the same first name but a different last name with another actor.
+
+Query:
+SELECT SUM(t.count) AS number_of_actors
+FROM
+(SELECT first_name, COUNT(DISTINCT last_name) AS count
+FROM actor
+GROUP BY first_name
+HAVING count > 1) t;
+
+Result:
++------------------+
+| number_of_actors |
++------------------+
+|              122 |
++------------------+
+1 row in set (0.00 sec)
+
+
+
+10) Show the first name, last name, and city of the customers whose first name is either Jamie, Jessie, or Leslie. Order the result by first name.
+
+Query:
+SELECT c.first_name, c.last_name, cl.city
+FROM customer c
+LEFT OUTER JOIN customer_list cl
+ON c.customer_id = cl.ID
+WHERE first_name = 'Jamie'
+OR first_name = 'Jessie'
+OR first_name = 'Leslie'
+ORDER BY first_name;
+
+Result:
++------------+-----------+------------------+
+| first_name | last_name | city             |
++------------+-----------+------------------+
+| JAMIE      | RICE      | Sterling Heights |
+| JAMIE      | WAUGH     | Kuwana           |
+| JESSIE     | BANKS     | Stara Zagora     |
+| JESSIE     | MILAM     | Binzhou          |
+| LESLIE     | GORDON    | Kilis            |
+| LESLIE     | SEWARD    | Pontianak        |
++------------+-----------+------------------+
+6 rows in set (0.00 sec)
+
+

@@ -1,0 +1,95 @@
+import pyspark.sql.functions as fc
+
+churn = spark.read.csv('churn.csv', header=True)
+
+
+
+a) select count(*) 
+   from churn
+   where gender = 'Male' and Churn = 'Yes';
+
+Script:
+churn.filter('gender = "Male" and Churn = "Yes"').count()
+
+Output:
+930
+
+
+
+b) select gender, max(TotalCharges)
+   from churn
+   where Churn = 'Yes'
+   group by gender;
+
+Script:
+churn = churn.withColumn('TotalCharges', fc.col('TotalCharges').cast('double'))
+churn.filter('Churn = "Yes"').groupBy('gender').agg(fc.max('TotalCharges')).show()
+
+Output:
++------+-----------------+
+|gender|max(TotalCharges)|
++------+-----------------+
+|Female|           8127.6|
+|  Male|           8684.8|
++------+-----------------+
+
+
+
+c) select gender, count(*)
+   from churn
+   where Churn = 'Yes'
+   group by gender;
+
+Script:
+churn.filter('Churn = "Yes"').groupBy('gender').agg(fc.count('*')).show()
+
+Output:
++------+--------+
+|gender|count(1)|
++------+--------+
+|Female|     939|
+|  Male|     930|
++------+--------+
+
+
+
+d) select Churn, Contract, count(*) cnt
+   from churn
+   group by Churn, Contract
+   order by Churn, cnt desc;
+   (Churn is ascending)
+
+Script:
+churn.groupBy(['Churn', 'Contract']).agg(fc.count('*').alias('cnt')).orderBy(['Churn', 'cnt'], ascending = [True, False]).show()
+
+Output:
++-----+--------------+----+
+|Churn|      Contract| cnt|
++-----+--------------+----+
+|   No|Month-to-month|2220|
+|   No|      Two year|1647|
+|   No|      One year|1307|
+|  Yes|Month-to-month|1655|
+|  Yes|      One year| 166|
+|  Yes|      Two year|  48|
++-----+--------------+----+
+
+
+
+e) select gender, Churn, count(*)
+   from churn
+   group by gender, Churn
+   having count(*) > 1000;
+
+Script:
+churn.groupBy(['gender', 'Churn']).agg(fc.count('*')).filter(fc.count('*') > 1000).show()
+
+Output:
++------+-----+--------+
+|gender|Churn|count(1)|
++------+-----+--------+
+|  Male|   No|    2625|
+|Female|   No|    2549|
++------+-----+--------+
+
+
